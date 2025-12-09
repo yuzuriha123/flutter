@@ -46,7 +46,7 @@ jobs:
 
       # 6. Upload IPA artifact
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: flutter-app-ipa
           path: build/ios/ipa/*.ipa
@@ -59,4 +59,4 @@ jobs:
         with:
           files: build/ios/ipa/*.ipa
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}

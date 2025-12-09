@@ -1,0 +1,62 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.3'
+          channel: 'stable'
+          cache: true
+
+      # 3. Setup Xcode
+      - name: Setup Xcode
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+          sudo xcode-select --reset
+
+      # 4. Get Flutter dependencies
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      # 5. Build IPA
+      - name: Build iOS IPA
+        run: |
+          flutter build ipa \
+            --release \
+            --no-codesign
+
+      # 6. Upload IPA artifact
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-app-ipa
+          path: build/ios/ipa/*.ipa
+          retention-days: 30
+
+      # 7. Create Release (optional - only on tag)
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/ios/ipa/*.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
